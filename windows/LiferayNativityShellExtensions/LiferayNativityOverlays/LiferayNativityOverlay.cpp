@@ -14,6 +14,8 @@
 
 #include "LiferayNativityOverlay.h"
 
+#include "nanomsg/reqrep.h"
+
 #include <atlstr.h>
 
 using namespace std;
@@ -25,7 +27,7 @@ extern HINSTANCE instanceHandle;
 #define IDM_DISPLAY 0
 #define IDB_OK 101
 
-LiferayNativityOverlay::LiferayNativityOverlay(): _communicationSocket(0), _referenceCount(1)
+LiferayNativityOverlay::LiferayNativityOverlay(): _communicationSocket(0), _referenceCount(1), _nanomsgsocket(-1)
 {
 }
 
@@ -211,4 +213,88 @@ bool LiferayNativityOverlay::_IsMonitoredFileState(const wchar_t* filePath)
 	delete response;
 
 	return needed;
+}
+
+IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* filePath)
+{
+	IconType ret = IconType::NetError;
+	auto naddr = _GetNanomsgAddr();
+	int nnop = 0;
+	if (_nanomsgsocket == -1)
+	{
+		_nanomsgsocket = nn_socket(AF_SP, NN_REQ);
+		if (_nanomsgsocket == -1)
+		{
+			return ret;
+		}
+		nnop = nn_connect(_nanomsgsocket, naddr.c_str());
+		if (nnop != 0)
+		{
+			ret = IconType::NetError;
+			nn_close(_nanomsgsocket);
+			_nanomsgsocket = -1;
+			return ret;
+		}
+	}
+
+	Json::Value jsonRoot;
+
+	jsonRoot[NATIVITY_COMMAND] = NATIVITY_GET_FILE_ICON_ID;
+	jsonRoot[NATIVITY_VALUE] = StringUtil::toString(filePath);
+
+	Json::FastWriter jsonWriter;
+
+	wstring* message = new wstring();
+
+	message->append(StringUtil::toWstring(jsonWriter.write(jsonRoot)));
+
+	wstring* response = new wstring();
+
+	if (!_communicationSocket->SendMessageReceiveResponse(message->c_str(), response))
+	{
+		delete message;
+		delete response;
+
+		ret = IconType::NetError;
+		return ret;
+	}
+
+	Json::Reader jsonReader;
+	Json::Value jsonResponse;
+
+	if (!jsonReader.parse(StringUtil::toString(*response), jsonResponse))
+	{
+		delete message;
+		delete response;
+		ret = IconType::UploadFailed;
+		return ret;
+	}
+
+	Json::Value jsonValue = jsonResponse.get(NATIVITY_VALUE, "");
+
+	wstring valueString = StringUtil::toWstring(jsonValue.asString());
+
+	if (valueString.size() == 0)
+	{
+		delete message;
+		delete response;
+
+		ret = IconType::UploadFailed;
+		return ret;
+	}
+
+	int state = _wtoi(valueString.c_str());
+
+	ret = static_cast<IconType>(state);
+
+	delete message;
+	delete response;
+
+	return ret;
+}
+
+std::string LiferayNativityOverlay::_GetNanomsgAddr()
+{
+	//can get from registry
+	return "tcp://127.0.0.1:/10086";
 }

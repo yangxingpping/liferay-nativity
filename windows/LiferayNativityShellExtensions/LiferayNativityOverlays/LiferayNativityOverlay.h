@@ -21,8 +21,10 @@
 #include "json/json.h"
 #include "stdafx.h"
 
+
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #pragma once
 
@@ -51,10 +53,14 @@ class LiferayNativityOverlay : public IShellIconOverlayIdentifier
 		bool _IsOverlaysEnabled();
 
 		bool _IsMonitoredFileState(const wchar_t* filePath);
+		IconType _IsMonitoredFileStateNanomsg(const wchar_t* filePath);
+
+		std::string _GetNanomsgAddr();
 
 		long _referenceCount;
 
 		CommunicationSocket* _communicationSocket;
+		int _nanomsgsocket;
 };
 
 #endif

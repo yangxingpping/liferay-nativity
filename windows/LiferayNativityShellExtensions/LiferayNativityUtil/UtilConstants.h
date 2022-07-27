@@ -12,6 +12,8 @@
  *  details.
  */
 
+#pragma once
+
 #define REGISTRY_ROOT_KEY						L"SOFTWARE\\Liferay Inc\\Liferay Nativity"
 
 #define REGISTRY_ENABLE_OVERLAY					L"EnableOverlay"
@@ -32,3 +34,14 @@
 #define NATIVITY_TITLE							"title"
 #define NATIVITY_UUID							"uuid"
 #define NATIVITY_VALUE							"value"
+
+enum class IconType
+{
+	NetError,
+	Uploading,
+	FinishUpload,
+	Frozen,
+	Burning,
+	FinishBurn,
+	UploadFailed,
+};
