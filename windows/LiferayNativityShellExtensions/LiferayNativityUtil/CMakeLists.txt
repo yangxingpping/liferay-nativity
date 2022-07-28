@@ -13,5 +13,7 @@ source_group("Headers" FILES ${MY_HEADERS2})
 
 ADD_LIBRARY(LiferayNativityUtil SHARED  ${CC})
 
+include(GenerateExportHeader)
+generate_export_header(LiferayNativityUtil EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/inc/export_flags/${PROJECT_NAME}Export.h)
 
 

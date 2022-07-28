@@ -18,6 +18,8 @@
 #include <assert.h>
 #include "json/json.h"
 
+#include "iconconf.h"
+
 #include <atlstr.h>
 
 using namespace std;
@@ -282,5 +284,5 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 std::string LiferayNativityOverlay::_GetNanomsgAddr()
 {
 	//can get from registry
-	return "tcp://127.0.0.1:/10086";
+	return iconconf::getNanoAddr();
 }
