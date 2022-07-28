@@ -208,6 +208,7 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 	IconType ret = IconType::NetError;
 	auto naddr = _GetNanomsgAddr();
 	int nnop = 0;
+	void* recvbuf = nullptr;
 	if (_nanomsgsocket == -1)
 	{
 		_nanomsgsocket = nn_socket(AF_SP, NN_REQ);
@@ -237,21 +238,28 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 	message->append(StringUtil::toWstring(jsonWriter.write(jsonRoot)));
 
 	wstring* response = new wstring();
-
-	if (!_communicationSocket->SendMessageReceiveResponse(message->c_str(), response))
+	nnop = nn_send(_nanomsgsocket, message->c_str(), message->size(), 0);
+	if (nnop != message->length())
 	{
 		delete message;
 		delete response;
-
 		ret = IconType::NetError;
 		return ret;
 	}
-
 	Json::Reader jsonReader;
 	Json::Value jsonResponse;
-
-	if (!jsonReader.parse(StringUtil::toString(*response), jsonResponse))
+	nnop = nn_recv(_nanomsgsocket, &recvbuf, NN_MSG, 0);
+	if (nnop < 0)
 	{
+		delete message;
+		delete response;
+		ret = IconType::NetError;
+		return ret;
+	}
+	if (!jsonReader.parse((char*)(recvbuf), jsonResponse))
+	{
+		nn_freemsg(recvbuf);
+		recvbuf = nullptr;
 		delete message;
 		delete response;
 		ret = IconType::UploadFailed;
@@ -277,7 +285,8 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 
 	delete message;
 	delete response;
-
+	nn_freemsg(recvbuf);
+	recvbuf = nullptr;
 	return ret;
 }
 

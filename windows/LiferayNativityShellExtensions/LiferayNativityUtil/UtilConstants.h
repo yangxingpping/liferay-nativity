@@ -36,6 +36,7 @@
 #define NATIVITY_TITLE							"title"
 #define NATIVITY_UUID							"uuid"
 #define NATIVITY_VALUE							"value"
+#define NATIVITY_GETMOUNT_POINT					"getMountPoint"
 
 enum class IconType
 {
