@@ -55,7 +55,7 @@ class LiferayNativityOverlay : public IShellIconOverlayIdentifier
 		bool _IsMonitoredFileState(const wchar_t* filePath);
 		IconType _IsMonitoredFileStateNanomsg(const wchar_t* filePath);
 
-		std::string _GetNanomsgAddr();
+	
 
 		long _referenceCount;
 

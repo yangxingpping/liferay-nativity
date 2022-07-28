@@ -10,4 +10,5 @@ public:
     static bool setNanoAddr(std::string addr);
     static std::wstring getMountPoints();
     static std::string getNanoAddr();
+
 };

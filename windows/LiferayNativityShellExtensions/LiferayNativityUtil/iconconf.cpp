@@ -6,6 +6,7 @@
 #include "StringUtil.h"
 #include "spdlog/spdlog.h"
 
+
 using winreg::RegKey;
 using winreg::RegException;
 using winreg::RegExpected;
@@ -89,6 +90,12 @@ std::string iconconf::getNanoAddr()
 	{
 		SPDLOG_WARN("get registry local nano addr  failed with unexpected exception");
 	}
+	if (ret.empty())
+	{
+		ret = "tcp://127.0.0.1:10086";
+	}
 	return ret;
 }
+
+
 

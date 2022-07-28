@@ -91,6 +91,7 @@ bool FileUtil::IsFileFiltered(const wchar_t* file)
 
 bool FileUtil::IsFileFiltered2(const wchar_t* file)
 {
+	return true;
 	bool bret = false;
 
 	auto mpt = iconconf::getMountPoints();

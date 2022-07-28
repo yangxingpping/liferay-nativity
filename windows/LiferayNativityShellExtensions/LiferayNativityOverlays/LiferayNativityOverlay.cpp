@@ -15,12 +15,16 @@
 #include "LiferayNativityOverlay.h"
 
 #include "nanomsg/reqrep.h"
+#include "nanomsg/pubsub.h"
 #include <assert.h>
 #include "json/json.h"
 
 #include "iconconf.h"
 
+#include "fmt/format.h"
+
 #include <atlstr.h>
+#include <string>
 
 using namespace std;
 
@@ -30,6 +34,24 @@ extern HINSTANCE instanceHandle;
 
 #define IDM_DISPLAY 0
 #define IDB_OK 101
+
+void sendLog(std::string log)
+{
+	/*string logpath = "C:\\Users\\abc\\Desktop\\Release\\x64\aaaaa.log";
+	FILE* ap = fopen(logpath.c_str(), "a");
+	if (ap!=NULL)
+	{
+		fwrite(log.c_str(), log.length(), 1, ap);
+		fclose(ap);
+		ap = NULL;
+	}*/
+	/*char logaddr[] = "tcp://10.8.8.3:10087";
+	int sock;
+	sock = nn_socket(AF_SP, NN_PUB);
+	nn_connect(sock, logaddr);
+	nn_send(sock, log.c_str(), log.length(), 0);
+	nn_close(sock);*/
+}
 
 LiferayNativityOverlay::LiferayNativityOverlay(): _communicationSocket(0), _referenceCount(1), _nanomsgsocket(-1)
 {
@@ -88,7 +110,7 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 {
 	HRESULT hRef = S_FALSE;
 	
-	if (!_IsOverlaysEnabled())
+	/*if (!_IsOverlaysEnabled())
 	{
 		return MAKE_HRESULT(S_FALSE, 0, 0);
 	}
@@ -96,7 +118,7 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 	if (!FileUtil::IsFileFiltered2(pwszPath))
 	{
 		return MAKE_HRESULT(S_FALSE, 0, 0);
-	}
+	}*/
 
 	_icon = _IsMonitoredFileStateNanomsg(pwszPath);
 
@@ -109,13 +131,9 @@ IFACEMETHODIMP LiferayNativityOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cc
 
 	*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
 
-	if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0)
-	{
-		HRESULT hResult = HRESULT_FROM_WIN32(GetLastError());
-
-		return hResult;
-	}
-
+	std::string path = fmt::format("C:\\XPStyle\\{}.ico", (int)(_icon)).c_str();
+	auto wpath = StringUtil::toWstring(path);
+	wcscpy_s(pwszIconFile, cchMax, wpath.c_str());
 	return S_OK;
 }
 
@@ -206,7 +224,7 @@ bool LiferayNativityOverlay::_IsMonitoredFileState(const wchar_t* filePath)
 IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* filePath)
 {
 	IconType ret = IconType::NetError;
-	auto naddr = _GetNanomsgAddr();
+	auto naddr = iconconf::getNanoAddr();
 	int nnop = 0;
 	void* recvbuf = nullptr;
 	if (_nanomsgsocket == -1)
@@ -219,7 +237,7 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 		nnop = nn_connect(_nanomsgsocket, naddr.c_str());
 		if (nnop != 0)
 		{
-			ret = IconType::NetError;
+			ret = IconType::Frozen;
 			nn_close(_nanomsgsocket);
 			_nanomsgsocket = -1;
 			return ret;
@@ -230,12 +248,13 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 
 	jsonRoot[NATIVITY_COMMAND] = NATIVITY_GET_FILE_ICON_ID;
 	jsonRoot[NATIVITY_VALUE] = StringUtil::toString(filePath);
+	jsonRoot["classpointer"] = fmt::format("{}", fmt::ptr(this));
 
 	Json::FastWriter jsonWriter;
 
-	wstring* message = new wstring();
+	string* message = new string();
 
-	message->append(StringUtil::toWstring(jsonWriter.write(jsonRoot)));
+	message->append(jsonWriter.write(jsonRoot));
 
 	wstring* response = new wstring();
 	nnop = nn_send(_nanomsgsocket, message->c_str(), message->size(), 0);
@@ -253,33 +272,12 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 	{
 		delete message;
 		delete response;
-		ret = IconType::NetError;
+		ret = IconType::Uploading;
 		return ret;
 	}
-	if (!jsonReader.parse((char*)(recvbuf), jsonResponse))
-	{
-		nn_freemsg(recvbuf);
-		recvbuf = nullptr;
-		delete message;
-		delete response;
-		ret = IconType::UploadFailed;
-		return ret;
-	}
-
-	Json::Value jsonValue = jsonResponse.get(NATIVITY_VALUE, "");
-
-	wstring valueString = StringUtil::toWstring(jsonValue.asString());
-
-	if (valueString.size() == 0)
-	{
-		delete message;
-		delete response;
-
-		ret = IconType::UploadFailed;
-		return ret;
-	}
-
-	int state = _wtoi(valueString.c_str());
+	string strrep((char*)recvbuf, (char*)(recvbuf)+nnop);
+	
+	int state = atoi(strrep.c_str());
 
 	ret = static_cast<IconType>(state);
 
@@ -288,10 +286,4 @@ IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* fil
 	nn_freemsg(recvbuf);
 	recvbuf = nullptr;
 	return ret;
-}
-
-std::string LiferayNativityOverlay::_GetNanomsgAddr()
-{
-	//can get from registry
-	return iconconf::getNanoAddr();
 }
