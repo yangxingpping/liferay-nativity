@@ -27,6 +27,7 @@ java/classes
 java/dist
 java/.settings
 
+/windows/LiferayNativityShellExtensions/.vs/
 windows/LiferayNativityShellExtensions/ipch
 windows/LiferayNativityShellExtensions/*.opensdf
 windows/LiferayNativityShellExtensions/Release
@@ -44,3 +45,6 @@ windows/LiferayNativityShellExtensions/LiferayNativityWindowsUtil/Release
 windows/LiferayNativityShellExtensions/LiferayNativityWindowsUtil/com_liferay_nativity*
 windows/LiferayNativityShellExtensions/NativityTest/Debug
 windows/LiferayNativityShellExtensions/NativityTest/Release
+
+/win_build/
+/windows/LiferayNativityShellExtensions/.vs/

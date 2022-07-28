@@ -14,7 +14,7 @@
 
 #pragma once
 
-#define REGISTRY_ROOT_KEY						L"SOFTWARE\\Liferay Inc\\Liferay Nativity"
+#define REGISTRY_ROOT_KEY						L"SOFTWARE\\amethystum Inc\\mtfs"
 
 #define REGISTRY_ENABLE_OVERLAY					L"EnableOverlay"
 #define REGISTRY_FILTER_FOLDER					L"FilterFolder"		// Deprecated as of 1.0.2

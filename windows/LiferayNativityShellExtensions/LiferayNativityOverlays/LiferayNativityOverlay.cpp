@@ -15,6 +15,8 @@
 #include "LiferayNativityOverlay.h"
 
 #include "nanomsg/reqrep.h"
+#include <assert.h>
+#include "json/json.h"
 
 #include <atlstr.h>
 
@@ -83,20 +85,7 @@ IFACEMETHODIMP LiferayNativityOverlay::GetPriority(int* pPriority)
 IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 {
 	HRESULT hRef = S_FALSE;
-	wchar_t* fileClass = _wcsdup(wcsrchr(pwszPath, '.'));
-	string pathx = CW2A(pwszPath);
-	//if (fileClass != NULL)
-	{
-		if (/*_wcsicmp(fileClass, L".txt") == 0 &&*/ pwszPath[0] == 'J')
-		{//判断是否是txt后缀的文件
-			hRef = S_OK;
-		}
-	}
 	
-
-	free(fileClass);
-	//如果是符合要求的文件，就返回S_OK
-	return hRef;
 	if (!_IsOverlaysEnabled())
 	{
 		return MAKE_HRESULT(S_FALSE, 0, 0);
@@ -107,10 +96,7 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 		return MAKE_HRESULT(S_FALSE, 0, 0);
 	}
 
-	if (!_IsMonitoredFileState(pwszPath))
-	{
-		return MAKE_HRESULT(S_FALSE, 0, 0);
-	}
+	_icon = _IsMonitoredFileStateNanomsg(pwszPath);
 
 	return MAKE_HRESULT(S_OK, 0, 0);
 }

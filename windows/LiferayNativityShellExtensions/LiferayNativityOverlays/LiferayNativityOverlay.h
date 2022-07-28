@@ -18,7 +18,7 @@
 #include "RegistryUtil.h"
 #include "StringUtil.h"
 #include "UtilConstants.h"
-#include "json/json.h"
+//#include "json/json.h"
 #include "stdafx.h"
 
 
@@ -61,6 +61,8 @@ class LiferayNativityOverlay : public IShellIconOverlayIdentifier
 
 		CommunicationSocket* _communicationSocket;
 		int _nanomsgsocket;
+
+		IconType _icon = IconType::NetError;
 };
 
 #endif
