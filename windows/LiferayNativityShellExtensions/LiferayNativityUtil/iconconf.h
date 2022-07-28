@@ -6,7 +6,8 @@
 class LIFERAYNATIVITYUTIL_EXPORT  iconconf
 {
 public:
-    static bool setMountPoint(std::string pt);
+    static bool setMountPoints(std::string pt);
     static bool setNanoAddr(std::string addr);
+    static std::wstring getMountPoints();
     static std::string getNanoAddr();
 };

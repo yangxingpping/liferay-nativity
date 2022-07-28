@@ -3,7 +3,7 @@
 
 #include "WinReg.hpp"
 #include "UtilConstants.h"
-
+#include "StringUtil.h"
 #include "spdlog/spdlog.h"
 
 using winreg::RegKey;
@@ -11,10 +11,10 @@ using winreg::RegException;
 using winreg::RegExpected;
 
 
-bool iconconf::setMountPoint(std::string pt)
+bool iconconf::setMountPoints(std::string pt)
 {
 	bool bret = false;
-	std::wstring wpt(pt.begin(), pt.end());
+	std::wstring wpt = StringUtil::toWstring(pt);
 	try
 	{
 		RegKey key{ HKEY_CURRENT_USER, REGISTRY_ROOT_KEY };
@@ -35,7 +35,7 @@ bool iconconf::setMountPoint(std::string pt)
 bool iconconf::setNanoAddr(std::string addr)
 {
 	bool bret = false;
-	std::wstring wpt(addr.begin(), addr.end());
+	std::wstring wpt = StringUtil::toWstring(addr);
 	try
 	{
 		RegKey key{ HKEY_CURRENT_USER, REGISTRY_ROOT_KEY };
@@ -53,6 +53,25 @@ bool iconconf::setNanoAddr(std::string addr)
 	return bret;
 }
 
+std::wstring iconconf::getMountPoints()
+{
+	std::wstring wret;
+	try
+	{
+		RegKey key{ HKEY_CURRENT_USER, REGISTRY_ROOT_KEY };
+		auto wret = key.GetStringValue(REGISTRY_MOUNT_POINT);
+	}
+	catch (const RegException& exp)
+	{
+		SPDLOG_WARN("get registry local nano addr failed with {}", exp.what());
+	}
+	catch (...)
+	{
+		SPDLOG_WARN("get registry local nano addr  failed with unexpected exception");
+	}
+	return wret;
+}
+
 std::string iconconf::getNanoAddr()
 {
 	std::string ret;
@@ -60,7 +79,7 @@ std::string iconconf::getNanoAddr()
 	{
 		RegKey key{ HKEY_CURRENT_USER, REGISTRY_ROOT_KEY };
 		auto wret = key.GetStringValue(REGISTRY_LOCAL_NNADDR);
-
+		ret = StringUtil::toString(wret);
 	}
 	catch (const RegException& exp)
 	{

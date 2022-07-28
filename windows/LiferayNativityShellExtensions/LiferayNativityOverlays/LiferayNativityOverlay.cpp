@@ -93,7 +93,7 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 		return MAKE_HRESULT(S_FALSE, 0, 0);
 	}
 
-	if (!FileUtil::IsFileFiltered(pwszPath))
+	if (!FileUtil::IsFileFiltered2(pwszPath))
 	{
 		return MAKE_HRESULT(S_FALSE, 0, 0);
 	}
