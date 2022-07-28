@@ -19,6 +19,8 @@
 #define REGISTRY_ENABLE_OVERLAY					L"EnableOverlay"
 #define REGISTRY_FILTER_FOLDER					L"FilterFolder"		// Deprecated as of 1.0.2
 #define REGISTRY_FILTER_FOLDERS					L"FilterFolders"
+#define REGISTRY_MOUNT_POINT					L"MountPoint"
+#define REGISTRY_LOCAL_NNADDR					L"LocalNNaddr"
 
 #define PORT									33001
 

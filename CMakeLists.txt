@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 project (liferay)
 
 IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  set(CMAKE_CXX_STANDARD 17)
   set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR})
   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
   add_definitions(-DOS_WIN -DUNICODE -D_UNICODE)
