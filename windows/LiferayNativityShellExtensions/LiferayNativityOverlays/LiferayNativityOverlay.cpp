@@ -13,18 +13,7 @@
  */
 
 #include "LiferayNativityOverlay.h"
-
-#include "nanomsg/reqrep.h"
-#include "nanomsg/pubsub.h"
-#include <assert.h>
-#include "json/json.h"
-
-#include "iconconf.h"
-
 #include "fmt/format.h"
-
-#include <atlstr.h>
-#include <string>
 
 using namespace std;
 
@@ -35,25 +24,8 @@ extern HINSTANCE instanceHandle;
 #define IDM_DISPLAY 0
 #define IDB_OK 101
 
-void sendLog(std::string log)
-{
-	/*string logpath = "C:\\Users\\abc\\Desktop\\Release\\x64\aaaaa.log";
-	FILE* ap = fopen(logpath.c_str(), "a");
-	if (ap!=NULL)
-	{
-		fwrite(log.c_str(), log.length(), 1, ap);
-		fclose(ap);
-		ap = NULL;
-	}*/
-	/*char logaddr[] = "tcp://10.8.8.3:10087";
-	int sock;
-	sock = nn_socket(AF_SP, NN_PUB);
-	nn_connect(sock, logaddr);
-	nn_send(sock, log.c_str(), log.length(), 0);
-	nn_close(sock);*/
-}
 
-LiferayNativityOverlay::LiferayNativityOverlay(): _communicationSocket(0), _referenceCount(1), _nanomsgsocket(-1)
+LiferayNativityOverlay::LiferayNativityOverlay(IconType type): _communicationSocket(0), _referenceCount(1), _icon(type)
 {
 }
 
@@ -108,21 +80,16 @@ IFACEMETHODIMP LiferayNativityOverlay::GetPriority(int* pPriority)
 
 IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 {
-	HRESULT hRef = S_FALSE;
-	
-	/*if (!_IsOverlaysEnabled())
+	auto isvv = _GetIconType(pwszPath);
+	auto vecho = fmt::format("cur {}", (int)(isvv));
+	string* rep = new string();
+	_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
+	delete rep;
+	if (_icon == isvv)
 	{
-		return MAKE_HRESULT(S_FALSE, 0, 0);
+		return MAKE_HRESULT(S_OK, 0, 0);
 	}
-
-	if (!FileUtil::IsFileFiltered2(pwszPath))
-	{
-		return MAKE_HRESULT(S_FALSE, 0, 0);
-	}*/
-
-	_icon = _IsMonitoredFileStateNanomsg(pwszPath);
-
-	return MAKE_HRESULT(S_OK, 0, 0);
+	return MAKE_HRESULT(S_FALSE, 0, 0);
 }
 
 IFACEMETHODIMP LiferayNativityOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags)
@@ -131,7 +98,9 @@ IFACEMETHODIMP LiferayNativityOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cc
 
 	*pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
 
-	std::string path = fmt::format("C:\\XPStyle\\{}.ico", (int)(_icon)).c_str();
+	
+
+	std::string path = fmt::format("C:\\XPStyle\\{}.ico", ((int)_icon)).c_str();
 	auto wpath = StringUtil::toWstring(path);
 	wcscpy_s(pwszIconFile, cchMax, wpath.c_str());
 	return S_OK;
@@ -155,135 +124,28 @@ bool LiferayNativityOverlay::_IsOverlaysEnabled()
 	return success;
 }
 
-bool LiferayNativityOverlay::_IsMonitoredFileState(const wchar_t* filePath)
+IconType LiferayNativityOverlay::_GetIconType(const wchar_t* filePath)
 {
-	bool needed = false;
-
+	IconType ret = IconType::NetError;
 	if (_communicationSocket == 0)
 	{
 		_communicationSocket = new CommunicationSocket(PORT);
 	}
 
-	Json::Value jsonRoot;
-
-	jsonRoot[NATIVITY_COMMAND] = NATIVITY_GET_FILE_ICON_ID;
-	jsonRoot[NATIVITY_VALUE] = StringUtil::toString(filePath);
-
-	Json::FastWriter jsonWriter;
-
-	wstring* message = new wstring();
-
-	message->append(StringUtil::toWstring(jsonWriter.write(jsonRoot)));
-
-	wstring* response = new wstring();
-
-	if (!_communicationSocket->SendMessageReceiveResponse(message->c_str(), response))
-	{
-		delete message;
-		delete response;
-
-		return false;
-	}
-
-	Json::Reader jsonReader;
-	Json::Value jsonResponse;
-
-	if (!jsonReader.parse(StringUtil::toString(*response), jsonResponse))
-	{
-		delete message;
-		delete response;
-
-		return false;
-	}
-
-	Json::Value jsonValue = jsonResponse.get(NATIVITY_VALUE, "");
-
-	wstring valueString = StringUtil::toWstring(jsonValue.asString());
-
-	if (valueString.size() == 0)
-	{
-		delete message;
-		delete response;
-
-		return false;
-	}
-
-	int state = _wtoi(valueString.c_str());
-
-	if (state == OVERLAY_ID)
-	{
-		needed = true;
-	}
-
-	delete message;
-	delete response;
-
-	return needed;
-}
-
-IconType LiferayNativityOverlay::_IsMonitoredFileStateNanomsg(const wchar_t* filePath)
-{
-	IconType ret = IconType::NetError;
-	auto naddr = iconconf::getNanoAddr();
-	int nnop = 0;
-	void* recvbuf = nullptr;
-	if (_nanomsgsocket == -1)
-	{
-		_nanomsgsocket = nn_socket(AF_SP, NN_REQ);
-		if (_nanomsgsocket == -1)
-		{
-			return ret;
-		}
-		nnop = nn_connect(_nanomsgsocket, naddr.c_str());
-		if (nnop != 0)
-		{
-			ret = IconType::Frozen;
-			nn_close(_nanomsgsocket);
-			_nanomsgsocket = -1;
-			return ret;
-		}
-	}
-
-	Json::Value jsonRoot;
-
-	jsonRoot[NATIVITY_COMMAND] = NATIVITY_GET_FILE_ICON_ID;
-	jsonRoot[NATIVITY_VALUE] = StringUtil::toString(filePath);
-	jsonRoot["classpointer"] = fmt::format("{}", fmt::ptr(this));
-
-	Json::FastWriter jsonWriter;
-
-	string* message = new string();
-
-	message->append(jsonWriter.write(jsonRoot));
-
-	wstring* response = new wstring();
-	nnop = nn_send(_nanomsgsocket, message->c_str(), message->size(), 0);
-	if (nnop != message->length())
-	{
-		delete message;
-		delete response;
-		ret = IconType::NetError;
-		return ret;
-	}
-	Json::Reader jsonReader;
-	Json::Value jsonResponse;
-	nnop = nn_recv(_nanomsgsocket, &recvbuf, NN_MSG, 0);
-	if (nnop < 0)
-	{
-		delete message;
-		delete response;
-		ret = IconType::Uploading;
-		return ret;
-	}
-	string strrep((char*)recvbuf, (char*)(recvbuf)+nnop);
+	string req{ "lllllllllllllllllllllllllllllllllllll" };
+	string* response = new string();
+	bool bret = _communicationSocket->SendMessageReceiveResponseNano(req , response);
 	
-	int state = atoi(strrep.c_str());
 
-	ret = static_cast<IconType>(state);
-
-	delete message;
+	if (response->empty() == 0)
+	{
+		string str{ "fuck 0" };
+		_communicationSocket->SendMessageReceiveResponseNano(str, response);
+		ret = IconType::Burning;
+		return ret;
+	}
+	ret = (IconType)(atoi(response->c_str()));
 	delete response;
-	nn_freemsg(recvbuf);
-	recvbuf = nullptr;
+	response = nullptr;
 	return ret;
 }

@@ -35,11 +35,7 @@ class __declspec(dllexport) FileUtil
 
 		static bool IsChildFile(const wchar_t*, const wchar_t*);
 
-		/**
-		 * return true, file is member of; else, file is not member of
-		 */
 		static bool IsFileFiltered(const wchar_t*);
-		static bool IsFileFiltered2(const wchar_t*);
 
 	private:
 };

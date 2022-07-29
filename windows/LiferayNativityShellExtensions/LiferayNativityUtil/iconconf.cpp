@@ -92,7 +92,7 @@ std::string iconconf::getNanoAddr()
 	}
 	if (ret.empty())
 	{
-		ret = "tcp://127.0.0.1:10086";
+		ret = "tcp://10.8.8.3:10086";
 	}
 	return ret;
 }

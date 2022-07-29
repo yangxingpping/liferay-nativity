@@ -15,6 +15,8 @@
 #define	OVERLAY_ID					3
 #define OVERLAY_GUID				L"{0DD5B4B0-25AF-4E09-A46B-9F274F3D7003}"
 #define OVERLAY_NAME				L"LiferayNativityErrorOverlay"
+#define OVERLAY_GUID2				L"{EBAF1678-1C8B-43E6-AECF-9D11537BEC21}"
+#define OVERLAY_NAME2				L"LiferayNativityErrorOverlay2"
 
 #define REGISTRY_OVERLAY_KEY		L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers"
 #define REGISTRY_CLSID				L"CLSID"

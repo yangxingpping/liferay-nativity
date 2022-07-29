@@ -14,6 +14,10 @@
 
 #include "CommunicationSocket.h"
 
+#include "nanomsg/reqrep.h"
+
+#include "fmt/format.h"
+
 #include <WinSock2.h>
 #include <Ws2def.h>
 #include <windows.h>
@@ -55,7 +59,7 @@ bool CommunicationSocket::ReceiveResponseOnly(wstring* message)
 	struct sockaddr_in clientService;
 
 	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+	clientService.sin_addr.s_addr = inet_addr("10.8.8.3");
 	clientService.sin_port = htons(_port);
 
 	HRESULT hResult = connect(clientSocket, (SOCKADDR*) &clientService, sizeof(clientService));
@@ -135,6 +139,8 @@ bool CommunicationSocket::_ConvertData(wchar_t* buf, int bytesRead, char* rec_bu
 	return true;
 }
 
+
+
 bool CommunicationSocket::SendMessageReceiveResponse(const wchar_t* message, wstring* response)
 {
 	SOCKET clientSocket = INVALID_SOCKET;
@@ -151,7 +157,7 @@ bool CommunicationSocket::SendMessageReceiveResponse(const wchar_t* message, wst
 	struct sockaddr_in clientService;
 
 	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+	clientService.sin_addr.s_addr = inet_addr("10.8.8.3");
 	clientService.sin_port = htons(_port);
 
 	HRESULT hResult = connect(clientSocket, (SOCKADDR*) &clientService, sizeof(clientService));
@@ -234,4 +240,34 @@ bool CommunicationSocket::SendMessageReceiveResponse(const wchar_t* message, wst
 	closesocket(clientSocket);
 
 	return true;
+}
+
+bool CommunicationSocket::SendMessageReceiveResponseNano(std::string& req, std::string* rep)
+{
+	bool ret = false;
+	*rep =fmt::format("{}", 10).c_str();
+	int s = nn_socket(AF_SP, NN_REQ);
+
+	auto addr = iconconf::getNanoAddr();
+	int op = nn_connect(s, addr.c_str());
+	if (op < 0)
+	{
+		nn_close(s);
+		return ret;
+	}
+	char rec_buf[DEFAULT_BUFLEN];
+
+	op = nn_send(s, req.c_str(), req.length(), 0);
+	if (op != req.length())
+	{
+		*rep = fmt::format("{}", 11).c_str();
+		nn_close(s);
+		return ret;
+	}
+
+	op = nn_recv(s, rec_buf, DEFAULT_BUFLEN, 0);
+
+	*rep = fmt::format("{}", op);
+	nn_close(s);
+	return ret;
 }

@@ -13,10 +13,11 @@
  */
 
 #include "NativityOverlayFactory.h"
+#include "iconconf.h"
 
 extern long dllReferenceCount;
 
-NativityOverlayFactory::NativityOverlayFactory(wchar_t* path) : _referenceCount(1)
+NativityOverlayFactory::NativityOverlayFactory(wchar_t* path, IconType type) : _referenceCount(1), _type(type)
 {
 	InterlockedIncrement(&dllReferenceCount);
 }
@@ -74,7 +75,7 @@ IFACEMETHODIMP NativityOverlayFactory::CreateInstance(
 	hResult = E_OUTOFMEMORY;
 
 	LiferayNativityOverlay* lrOverlay =
-	    new(std::nothrow) LiferayNativityOverlay();
+	    new(std::nothrow) LiferayNativityOverlay(_type);
 
 	if (!lrOverlay)
 	{

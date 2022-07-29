@@ -23,7 +23,7 @@
 class NativityOverlayFactory : public IClassFactory
 {
 	public:
-		NativityOverlayFactory(wchar_t* path);
+		NativityOverlayFactory(wchar_t* path, IconType type);
 
 		IFACEMETHODIMP_(ULONG) AddRef();
 
@@ -40,6 +40,8 @@ class NativityOverlayFactory : public IClassFactory
 
 	private:
 		wchar_t* _path;
+
+		IconType _type;
 
 		long _referenceCount;
 };

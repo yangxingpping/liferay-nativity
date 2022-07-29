@@ -20,6 +20,7 @@ HINSTANCE instanceHandle = NULL;
 
 long dllReferenceCount = 0;
 
+#include "iconconf.h"
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
@@ -45,12 +46,26 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 
 	hResult = CLSIDFromString(OVERLAY_GUID, (LPCLSID)&guid);
 
+	GUID guid2;
+
+	hResult = CLSIDFromString(OVERLAY_GUID2, (LPCLSID)&guid2);
+	
 	if (hResult != S_OK)
 	{
 		return hResult;
 	}
 
-	if (!IsEqualCLSID(guid, rclsid))
+	IconType type = IconType::NetError;
+
+	if (IsEqualCLSID(rclsid, guid))
+	{
+		type = IconType::NetError;
+	}
+	else if (IsEqualCLSID(rclsid, guid2))
+	{
+		type = IconType::Uploading;
+	}
+	else
 	{
 		return hResult;
 	}
@@ -66,7 +81,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 		return hResult;
 	}
 
-	NativityOverlayFactory* nativityOverlayFactory = new NativityOverlayFactory(szModule);
+	NativityOverlayFactory* nativityOverlayFactory = new NativityOverlayFactory(szModule, type);
 
 	if (nativityOverlayFactory)
 	{
@@ -119,6 +134,27 @@ HRESULT _stdcall DllRegisterServer(void)
 		return hResult;
 	}
 
+	hResult = CLSIDFromString(OVERLAY_GUID2, (LPCLSID)&guid);
+
+	if (hResult != S_OK)
+	{
+		return hResult;
+	}
+
+	hResult = NativityOverlayRegistrationHandler::RegisterCOMObject(szModule, guid);
+
+	if (FAILED(hResult))
+	{
+		return hResult;
+	}
+
+	hResult = NativityOverlayRegistrationHandler::MakeRegistryEntries(guid, OVERLAY_NAME2);
+
+	if (FAILED(hResult))
+	{
+		return hResult;
+	}
+
 	return hResult;
 }
 
@@ -151,6 +187,27 @@ STDAPI DllUnregisterServer(void)
 	}
 
 	hResult = NativityOverlayRegistrationHandler::RemoveRegistryEntries(OVERLAY_NAME);
+
+	if (FAILED(hResult))
+	{
+		return hResult;
+	}
+
+	hResult = CLSIDFromString(OVERLAY_GUID2, (LPCLSID)&guid);
+
+	if (hResult != S_OK)
+	{
+		return hResult;
+	}
+
+	hResult = NativityOverlayRegistrationHandler::UnregisterCOMObject(guid);
+
+	if (FAILED(hResult))
+	{
+		return hResult;
+	}
+
+	hResult = NativityOverlayRegistrationHandler::RemoveRegistryEntries(OVERLAY_NAME2);
 
 	if (FAILED(hResult))
 	{

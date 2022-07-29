@@ -18,13 +18,13 @@
 #include "RegistryUtil.h"
 #include "StringUtil.h"
 #include "UtilConstants.h"
-//#include "json/json.h"
+#include "json/json.h"
 #include "stdafx.h"
 
+#include "iconconf.h"
 
 #include <iostream>
 #include <fstream>
-#include <string>
 
 #pragma once
 
@@ -32,7 +32,8 @@ class LiferayNativityOverlay : public IShellIconOverlayIdentifier
 
 {
 	public:
-		LiferayNativityOverlay();
+		
+		LiferayNativityOverlay(IconType type);
 
 		IFACEMETHODIMP_(ULONG) AddRef();
 
@@ -52,17 +53,14 @@ class LiferayNativityOverlay : public IShellIconOverlayIdentifier
 	private:
 		bool _IsOverlaysEnabled();
 
-		bool _IsMonitoredFileState(const wchar_t* filePath);
-		IconType _IsMonitoredFileStateNanomsg(const wchar_t* filePath);
 
-	
+		IconType _GetIconType(const wchar_t* filePath);
 
 		long _referenceCount;
 
+		
+		IconType _icon;
 		CommunicationSocket* _communicationSocket;
-		int _nanomsgsocket;
-
-		IconType _icon = IconType::NetError;
 };
 
 #endif

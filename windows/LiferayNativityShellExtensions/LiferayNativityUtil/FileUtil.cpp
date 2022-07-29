@@ -13,7 +13,6 @@
  */
 
 #include "FileUtil.h"
-#include "iconconf.h"
 
 using namespace std;
 
@@ -87,16 +86,4 @@ bool FileUtil::IsFileFiltered(const wchar_t* file)
 	delete rootFolder;
 
 	return false;
-}
-
-bool FileUtil::IsFileFiltered2(const wchar_t* file)
-{
-	return true;
-	bool bret = false;
-
-	auto mpt = iconconf::getMountPoints();
-
-	bret = IsChildFile(mpt.c_str(), file);
-
-	return bret;
 }

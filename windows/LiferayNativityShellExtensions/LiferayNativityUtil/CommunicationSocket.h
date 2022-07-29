@@ -19,6 +19,7 @@
 #pragma warning (disable : 4251)
 
 #include "UtilConstants.h"
+#include "iconconf.h"
 
 #include <fstream>
 #include <iostream>
@@ -35,8 +36,11 @@ class __declspec(dllexport) CommunicationSocket
 
 		bool SendMessageReceiveResponse(const wchar_t*, std::wstring*);
 
+		bool SendMessageReceiveResponseNano(std::string& req, std::string* rep);
+
 	private:
 		bool _ConvertData(wchar_t* buf, int bytesRead, char* rec_buf);
+
 
 		int _port;
 };
