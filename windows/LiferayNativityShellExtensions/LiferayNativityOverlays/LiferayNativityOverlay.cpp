@@ -81,15 +81,23 @@ IFACEMETHODIMP LiferayNativityOverlay::GetPriority(int* pPriority)
 IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 {
 	auto isvv = _GetIconType(pwszPath);
-	auto vecho = fmt::format("cur {}, my class {}", (int)(isvv), (int)(_icon));
-	string* rep = new string();
-	_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
-	delete rep;
 	if (_icon == isvv)
 	{
-		return MAKE_HRESULT(S_OK, 0, 0);
+		/*auto vecho = fmt::format("++++true cur {}, my class {} pt {}", (int)(isvv), (int)(_icon), fmt::ptr(this));
+		string* rep = new string();
+		_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
+		delete rep;*/
+
+		return S_OK;
 	}
-	return S_FALSE;
+	else
+	{
+		/*auto vecho = fmt::format("----false cur {}, my class {}, pt {}", (int)(isvv), (int)(_icon), fmt::ptr(this));
+		string* rep = new string();
+		_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
+		delete rep;*/
+		return S_FALSE;
+	}
 }
 
 IFACEMETHODIMP LiferayNativityOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags)
@@ -135,16 +143,14 @@ IconType LiferayNativityOverlay::_GetIconType(const wchar_t* filePath)
 	string req = fmt::format("lllllllllllllllllllllllllllllllllllll {}", (int)(_icon));
 	string* response = new string();
 	bool bret = _communicationSocket->SendMessageReceiveResponseNano(req , response);
-	
-
-	if (response->empty())
-	{
-		string str{ "fuck 0" };
+	string vv2 = *response;
+	/*{
+		string str = fmt::format("0f{}", vv2);
 		_communicationSocket->SendMessageReceiveResponseNano(str, response);
 		ret = IconType::Burning;
 		return ret;
-	}
-	ret = (IconType)(atoi(response->c_str()));
+	}*/
+	ret = (IconType)(atoi(vv2.c_str()));
 	delete response;
 	response = nullptr;
 	return ret;

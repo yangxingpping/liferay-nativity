@@ -271,7 +271,6 @@ bool CommunicationSocket::SendMessageReceiveResponseNano(std::string& req, std::
 		*rep = rec_buf[0];
 	}
 	ret = true;
-	*rep = fmt::format("{}", op);
 	nn_close(s);
 	return ret;
 }

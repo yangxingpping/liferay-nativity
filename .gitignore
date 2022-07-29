@@ -48,3 +48,6 @@ windows/LiferayNativityShellExtensions/NativityTest/Release
 
 /win_build/
 /windows/LiferayNativityShellExtensions/.vs/
+windows/LiferayNativityShellExtensions/LiferayNativityOverlays/LiferayNativityOverlay.cpp
+windows/LiferayNativityShellExtensions/LiferayNativityUtil/CommunicationSocket.cpp
+windows/LiferayNativityShellExtensions/LiferayNativityUtil/CommunicationSocket.h
