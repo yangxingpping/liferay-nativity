@@ -81,7 +81,7 @@ IFACEMETHODIMP LiferayNativityOverlay::GetPriority(int* pPriority)
 IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib)
 {
 	auto isvv = _GetIconType(pwszPath);
-	auto vecho = fmt::format("cur {}", (int)(isvv));
+	auto vecho = fmt::format("cur {}, my class {}", (int)(isvv), (int)(_icon));
 	string* rep = new string();
 	_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
 	delete rep;
@@ -89,7 +89,7 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 	{
 		return MAKE_HRESULT(S_OK, 0, 0);
 	}
-	return MAKE_HRESULT(S_FALSE, 0, 0);
+	return S_FALSE;
 }
 
 IFACEMETHODIMP LiferayNativityOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int* pIndex, DWORD* pdwFlags)
@@ -132,12 +132,12 @@ IconType LiferayNativityOverlay::_GetIconType(const wchar_t* filePath)
 		_communicationSocket = new CommunicationSocket(PORT);
 	}
 
-	string req{ "lllllllllllllllllllllllllllllllllllll" };
+	string req = fmt::format("lllllllllllllllllllllllllllllllllllll {}", (int)(_icon));
 	string* response = new string();
 	bool bret = _communicationSocket->SendMessageReceiveResponseNano(req , response);
 	
 
-	if (response->empty() == 0)
+	if (response->empty())
 	{
 		string str{ "fuck 0" };
 		_communicationSocket->SendMessageReceiveResponseNano(str, response);
