@@ -26,7 +26,7 @@ using namespace std;
 
 #define DEFAULT_BUFLEN 4096
 
-CommunicationSocket::CommunicationSocket(int port): _port(port)
+CommunicationSocket::CommunicationSocket(int port): _port(port), s(-1)
 {
 	WSADATA wsaData;
 
@@ -246,13 +246,22 @@ bool CommunicationSocket::SendMessageReceiveResponseNano(std::string& req, std::
 {
 	bool ret = false;
 	*rep =fmt::format("{}", 10).c_str();
-	int s = nn_socket(AF_SP, NN_REQ);
+	if (s == -1)
+	{
+		int timeo = 1000;
+		s = nn_socket(AF_SP, NN_REQ);
+		nn_setsockopt(s, NN_SOL_SOCKET, NN_SNDTIMEO,
+			&timeo, sizeof(timeo));
 
+		nn_setsockopt(s, NN_SOL_SOCKET, NN_RCVTIMEO,
+			&timeo, sizeof(timeo));
+	}
 	auto addr = iconconf::getNanoAddr();
 	int op = nn_connect(s, addr.c_str());
 	if (op < 0)
 	{
 		nn_close(s);
+		s = -1;
 		return ret;
 	}
 	char rec_buf[DEFAULT_BUFLEN];
@@ -262,6 +271,7 @@ bool CommunicationSocket::SendMessageReceiveResponseNano(std::string& req, std::
 	{
 		*rep = fmt::format("{}", 11).c_str();
 		nn_close(s);
+		s = -1;
 		return ret;
 	}
 
@@ -271,6 +281,5 @@ bool CommunicationSocket::SendMessageReceiveResponseNano(std::string& req, std::
 		*rep = rec_buf[0];
 	}
 	ret = true;
-	nn_close(s);
 	return ret;
 }

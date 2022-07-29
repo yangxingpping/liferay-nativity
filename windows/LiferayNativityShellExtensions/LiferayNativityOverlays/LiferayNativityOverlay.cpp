@@ -83,19 +83,11 @@ IFACEMETHODIMP LiferayNativityOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttri
 	auto isvv = _GetIconType(pwszPath);
 	if (_icon == isvv)
 	{
-		/*auto vecho = fmt::format("++++true cur {}, my class {} pt {}", (int)(isvv), (int)(_icon), fmt::ptr(this));
-		string* rep = new string();
-		_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
-		delete rep;*/
 
 		return S_OK;
 	}
 	else
 	{
-		/*auto vecho = fmt::format("----false cur {}, my class {}, pt {}", (int)(isvv), (int)(_icon), fmt::ptr(this));
-		string* rep = new string();
-		_communicationSocket->SendMessageReceiveResponseNano(vecho, rep);
-		delete rep;*/
 		return S_FALSE;
 	}
 }

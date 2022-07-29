@@ -41,7 +41,7 @@ class __declspec(dllexport) CommunicationSocket
 	private:
 		bool _ConvertData(wchar_t* buf, int bytesRead, char* rec_buf);
 
-
+		int s;
 		int _port;
 };
 
